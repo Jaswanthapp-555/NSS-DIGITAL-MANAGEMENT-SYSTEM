@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'https://nss-digital-management-system.onrender.com/api';
 
 // IN-MEMORY STATE VARIABLE
 let state = {

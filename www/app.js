@@ -783,12 +783,18 @@ async function handleCreateEvent(e) {
         return;
     }
 
+    const id = 'EVT-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
     const newEvent = {
+        id,
         title,
+        category: 'Community Drive',
         date,
-        type: 'Community Drive',
+        venue: 'TBD',
+        hours,
+        target: 50,
         status,
-        hours
+        inCharge: 'Program Officer'
     };
 
     try {

@@ -42,6 +42,14 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 registeredEvents TEXT DEFAULT '[]'
             )`);
 
+            // Insert Demo Volunteer if empty
+            db.get("SELECT COUNT(*) as count FROM volunteers", (err, row) => {
+                if (row && row.count === 0) {
+                    db.run(`INSERT INTO volunteers (id, name, roll, dept, year, blood, phone, email, hours, registeredEvents) VALUES 
+                        ('22A91A04K3', 'Jaswanth', '22A91A04K3', 'ECE', '3', 'O+', '+91-9876543210', 'jaswanth@example.com', 120, '[]')`);
+                }
+            });
+
             // Create Events Table
             db.run(`CREATE TABLE IF NOT EXISTS events (
                 id TEXT PRIMARY KEY,

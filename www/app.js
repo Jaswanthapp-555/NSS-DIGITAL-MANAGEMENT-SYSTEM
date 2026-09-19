@@ -543,8 +543,12 @@ async function registerForEvent(eventId) {
 
     // Register for first volunteer in demo
     const volunteer = state.volunteers[0];
-    if (volunteer) {
-        try {
+    if (!volunteer) {
+        showToast('No volunteer found! Please add a volunteer first.', 'error');
+        return;
+    }
+
+    try {
             const res = await fetch(`${API_BASE}/events/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -561,7 +565,6 @@ async function registerForEvent(eventId) {
         } catch (e) {
             showToast('Error registering for event', 'error');
         }
-    }
 }
 
 // DIGITAL ID CARD PREVIEW & SELECTION

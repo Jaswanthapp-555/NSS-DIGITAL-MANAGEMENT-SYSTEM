@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSS SevaConnect - NSS Digital Management System</title>
+    <meta name="description" content="Official National Service Scheme (NSS) Digital Volunteer Enrolment, Event Management, and Accreditation System.">
+    
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            600: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        nss: {
+                            amber: '#d97706',
+                            amberLight: '#fef3c7',
+                            amberDark: '#b45309',
+                            blue: '#1e3a8a',
+                            gold: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Flat Light Institutional Theme Styling - NO GRADIENTS */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Print Media Styling for Digital ID Card */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-id-card-wrapper, #printable-id-card-wrapper * {
+                visibility: visible;
+            }
+            #printable-id-card-wrapper {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%) scale(1.15);
+                box-shadow: none !important;
+                border: 2px solid #0f172a !important;
+                background-color: #ffffff !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Toast animation */
+        @keyframes slideIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-animate {
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased bg-slate-50 text-slate-900">
+
+    <!-- TOP ANNOUNCEMENT BANNER -->
+    <div id="announcement-banner" class="bg-amber-100 border-b border-amber-300 text-amber-950 px-4 py-2.5 text-xs sm:text-sm font-medium transition-all duration-200">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 overflow-hidden">
+                <span class="inline-flex items-center gap-1.5 bg-amber-600 text-white font-bold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded shadow-sm shrink-0">
+                    <i data-lucide="megaphone" class="w-3 h-3">="Announcement"</i> Broadcast
+                </span>
+                <span id="announcement-text" class="truncate font-semibold text-slate-900">
+                    URGENT: District Blood Donation Drive today at Campus Health Center. Volunteers report by 10:00 AM!
+                </span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="dismissAnnouncement()" class="text-amber-800 hover:text-amber-950 p-1 rounded hover:bg-amber-200/60 transition" title="Dismiss">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN NAVBAR -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20">
+                
+                <!-- BRAND LOGO & TITLE -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('dashboard')">
+                    <!-- Crisp Solid NSS Emblem SVG -->
+                    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-800 border-2 border-amber-500 flex items-center justify-center p-1 shrink-0 shadow-sm">
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <!-- Outer Wheel Ring -->
+                            <circle cx="50" cy="50" r="46" fill="#1e3a8a" stroke="#f59e0b" stroke-width="5"/>
+                            <circle cx="50" cy="50" r="36" fill="#0f172a" stroke="#ffffff" stroke-width="2"/>
+                            <!-- Spokes -->
+                            <path d="M50 14 L50 86 M14 50 L86 50 M24 24 L76 76 M24 76 L76 24" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+                            <!-- Center Sun Shield -->
+                            <circle cx="50" cy="50" r="16" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
+                            <circle cx="50" cy="50" r="7" fill="#f59e0b"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-heading font-extrabold text-lg sm:text-xl tracking-tight text-white">NSS SevaConnect</span>
+                            <span class="bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">Govt Portal</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 hidden sm:block">National Service Scheme • Ministry of Youth Affairs & Sports</p>
+                    </div>
+                </div>
+
+                <!-- DESKTOP NAVIGATION LINKS -->
+                <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition text-white bg-slate-800 border border-slate-700 flex items-center gap-2">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4 text-amber-400"></i> Dashboard
+                    </button>
+                    <button onclick="switchTab('directory')" id="nav-directory" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2">
+                        <i data-lucide="users" class="w-4 h-4 text-slate-400"></i> Volunteer Roster
+                    </button>
+                    <button onclick="switchTab('events')" id="nav-events" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i> Events Hub
+                    </button>
+                    <button onclick="switchTab('idcard')" id="nav-idcard" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2">
+                        <i data-lucide="qr-code" class="w-4 h-4 text-slate-400"></i> Digital ID
+                    </button>
+                    <button onclick="switchTab('admin')" id="nav-admin" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i> PO Portal
+                        <span id="pending-badge" class="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full hidden">0</span>
+                    </button>
+                </nav>
+
+                <!-- RIGHT CONTROLS: ROLE SWITCHER & CLOCK -->
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <!-- Real-Time Digital Clock -->
+                    <div class="hidden lg:flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-lg text-xs font-mono text-slate-300">
+                        <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                        <span id="live-clock">--:--:-- PM</span>
+                    </div>
+
+                    <!-- ROLE SWITCHER PILL TOGGLE -->
+                    <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center shrink-0">
+                        <button onclick="setRole('volunteer')" id="role-btn-volunteer" class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 bg-amber-600 text-white shadow-sm">
+                            <i data-lucide="user" class="w-3.5 h-3.5"></i> Volunteer
+                        </button>
+                        <button onclick="setRole('admin')" id="role-btn-admin" class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 text-slate-400 hover:text-white">
+                            <i data-lucide="shield" class="w-3.5 h-3.5"></i> PO / Admin
+                        </button>
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-300 hover:bg-slate-800">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MOBILE NAVIGATION DRAWER -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-slate-800 bg-slate-900 px-4 pt-2 pb-4 space-y-2">
+            <button id="mobile-nav-dashboard" onclick="switchTab('dashboard'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-white bg-slate-800 flex items-center gap-2">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 text-amber-400"></i> Executive Dashboard
+            </button>
+            <button id="mobile-nav-directory" onclick="switchTab('directory'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 flex items-center gap-2">
+                <i data-lucide="users" class="w-4 h-4"></i> Volunteer Roster & Registration
+            </button>
+            <button id="mobile-nav-events" onclick="switchTab('events'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 flex items-center gap-2">
+                <i data-lucide="calendar" class="w-4 h-4"></i> Drives & Event Hub
+            </button>
+            <button id="mobile-nav-idcard" onclick="switchTab('idcard'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 flex items-center gap-2">
+                <i data-lucide="qr-code" class="w-4 h-4"></i> Profile, ID & Certificates
+            </button>
+            <button id="mobile-nav-admin" onclick="switchTab('admin'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 flex items-center justify-between">
+                <span class="flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i> Program Officer Portal</span>
+                <span id="mobile-pending-badge" class="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none"></div>
+
+    <!-- MAIN BODY CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+        
+        <!-- HEADER STATUS BANNER -->
+        <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-xl bg-slate-900 text-amber-500 flex items-center justify-center shrink-0 border border-slate-800">
+                    <i data-lucide="award" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl sm:text-2xl font-bold font-heading text-slate-900">National Service Scheme Unit #01</h1>
+                        <span id="current-role-badge" class="bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Volunteer View</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-600 mt-0.5">Academic Session 2025–2026 • Official College Management Console</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2.5 shrink-0 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
+                <button id="enrol-volunteer-btn" onclick="openRegistrationModal()" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-lg transition border border-amber-700 flex items-center justify-center gap-2 shadow-sm">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Enrol Volunteer
+                </button>
+                <button onclick="switchTab('events')" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-lg transition border border-slate-800 flex items-center justify-center gap-2 shadow-sm">
+                    <i data-lucide="calendar-plus" class="w-4 h-4"></i> View Drives
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: EXECUTIVE DASHBOARD VIEW            -->
+        <!-- ========================================== -->
+        <section id="view-dashboard" class="tab-view space-y-8">
+            
+            <!-- 4 METRIC CARDS (ADMIN DASHBOARD) -->
+            <div id="admin-dashboard-metrics" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                
+                <!-- METRIC 1: VOLUNTEERS -->
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Registered Volunteers</span>
+                        <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 flex items-center justify-center">
+                            <i data-lucide="users" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="metric-volunteers" class="text-3xl font-extrabold font-heading text-slate-900">0</span>
+                        <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">+12 Active</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Verified Unit Roster</p>
+                </div>
+
+                <!-- METRIC 2: HOURS LOGGED -->
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Service Hours Logged</span>
+                        <div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center">
+                            <i data-lucide="clock" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="metric-hours" class="text-3xl font-extrabold font-heading text-slate-900">0</span>
+                        <span class="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">PO Verified</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Community Work Credit</p>
+                </div>
+
+                <!-- METRIC 3: COMPLETED CAMPS -->
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Community Drives</span>
+                        <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
+                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="metric-camps" class="text-3xl font-extrabold font-heading text-slate-900">0</span>
+                        <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">100% Executed</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Special Camps & Events</p>
+                </div>
+
+                <!-- METRIC 4: BENEFICIARIES -->
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Beneficiaries Reached</span>
+                        <div class="w-9 h-9 rounded-lg bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center">
+                            <i data-lucide="heart" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="metric-beneficiaries" class="text-3xl font-extrabold font-heading text-slate-900">8,500+</span>
+                        <span class="text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">Citizens</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Direct Civic Outreach</p>
+                </div>
+            </div>
+
+            <!-- VOLUNTEER DASHBOARD METRICS -->
+            <div id="volunteer-dashboard-metrics" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                
+                <!-- METRIC 1: MY HOURS -->
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">My Service Hours</span>
+                        <div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center">
+                            <i data-lucide="clock" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="metric-my-hours" class="text-3xl font-extrabold font-heading text-slate-900">0</span>
+                        <span class="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">/ 120 Required</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3">
+                        <div id="progress-my-hours" class="bg-amber-500 h-1.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- METRIC 2: MY EVENTS -->
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Events Participated</span>
+                        <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 flex items-center justify-center">
+                            <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="metric-my-events" class="text-3xl font-extrabold font-heading text-slate-900">0</span>
+                        <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Active</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Total Enrolled Drives</p>
+                </div>
+
+                <!-- METRIC 3: RANKING / STATUS -->
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">NSS Status</span>
+                        <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
+                            <i data-lucide="award" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="metric-my-status" class="text-3xl font-extrabold font-heading text-slate-900">Novice</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Complete 120 Hrs for Certificate</p>
+                </div>
+
+            </div>
+
+            <!-- TWO COLUMN DASHBOARD CONTENT -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- LEFT COLUMN: RECENT ACTIVITIES & DRIVES FEED (2 COLS) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
+                            <div>
+                                <h3 class="text-lg font-bold font-heading text-slate-900">Recent Service Drives & Activities</h3>
+                                <p class="text-xs text-slate-500">Live operational log of completed & ongoing NSS activities</p>
+                            </div>
+                            <button onclick="switchTab('events')" class="text-xs font-semibold text-amber-700 hover:text-amber-800 flex items-center gap-1">
+                                View All Events <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+
+                        <div id="recent-activities-list" class="space-y-4">
+                            <!-- Injected via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: DEPARTMENTAL BREAKDOWN & QUICK LINKS (1 COL) -->
+                <div id="admin-dashboard-right-col" class="space-y-6">
+                    
+                    <!-- DEPARTMENT BREAKDOWN CARD -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-lg font-bold font-heading text-slate-900 mb-1">Unit Participation</h3>
+                        <p class="text-xs text-slate-500 mb-4">Volunteer distribution by department branch</p>
+
+                        <div class="space-y-3.5" id="dept-breakdown-list">
+                            <!-- Injected via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- ADMIN / PO ACTION BOX -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 text-white shadow-sm space-y-3">
+                        <div class="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i> Program Officer Actions
+                        </div>
+                        <p class="text-xs text-slate-300">
+                            Evaluators can switch roles using the top-right toggle to test attendance approvals, post broadcast alerts, and export CSV audit reports.
+                        </p>
+                        <div class="pt-2 flex flex-col gap-2">
+                            <button onclick="switchTab('admin')" class="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition border border-amber-700 flex items-center justify-center gap-2">
+                                Open PO Control Portal <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="switchTab('idcard')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition border border-slate-700 flex items-center justify-center gap-2">
+                                Preview Digital ID Cards <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: VOLUNTEER DIRECTORY VIEW            -->
+        <!-- ========================================== -->
+        <section id="view-directory" class="tab-view space-y-6 hidden">
+            
+            <!-- SECTION TITLE & SEARCH BAR -->
+            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold font-heading text-slate-900">Registered NSS Volunteer Directory</h2>
+                        <p class="text-xs text-slate-500">Official enrolment list with blood group indexing and logged service credit</p>
+                    </div>
+                    <button onclick="openRegistrationModal()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg transition border border-amber-700 flex items-center gap-2 shrink-0 shadow-sm">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i> Add New Volunteer
+                    </button>
+                </div>
+
+                <!-- FILTER CONTROLS GRID -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+                    
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                        <input type="text" id="dir-search" oninput="filterDirectory()" placeholder="Search Name or NSS ID..." class="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 focus:bg-white text-slate-900">
+                    </div>
+
+                    <!-- Department Filter -->
+                    <div>
+                        <select id="dir-filter-dept" onchange="filterDirectory()" class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 focus:bg-white text-slate-900">
+                            <option value="ALL">All Departments</option>
+                            <option value="Computer Science (CSE)">CSE</option>
+                            <option value="Electronics (ECE)">ECE</option>
+                            <option value="Mechanical (MECH)">Mechanical</option>
+                            <option value="Civil Engineering">Civil</option>
+                            <option value="Biotechnology">Biotechnology</option>
+                            <option value="Arts & Humanities">Arts & Humanities</option>
+                        </select>
+                    </div>
+
+                    <!-- Blood Group Filter -->
+                    <div>
+                        <select id="dir-filter-blood" onchange="filterDirectory()" class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 focus:bg-white text-slate-900">
+                            <option value="ALL">All Blood Groups</option>
+                            <option value="O+">O+</option>
+                            <option value="A+">A+</option>
+                            <option value="B+">B+</option>
+                            <option value="AB+">AB+</option>
+                            <option value="O-">O-</option>
+                            <option value="A-">A-</option>
+                            <option value="B-">B-</option>
+                            <option value="AB-">AB-</option>
+                        </select>
+                    </div>
+
+                    <!-- Clear Filters -->
+                    <div>
+                        <button onclick="resetDirectoryFilters()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold py-2 px-3 rounded-lg border border-slate-300 transition flex items-center justify-center gap-1.5">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Filters
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- VOLUNTEERS TABLE CARD -->
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                                <th class="py-3.5 px-4">NSS Volunteer ID</th>
+                                <th class="py-3.5 px-4">Volunteer Name & Contact</th>
+                                <th class="py-3.5 px-4">Department / Year</th>
+                                <th class="py-3.5 px-4">Blood Group</th>
+                                <th class="py-3.5 px-4 text-center">Service Hours</th>
+                                <th class="py-3.5 px-4">Status</th>
+                                <th class="py-3.5 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="volunteers-table-body" class="divide-y divide-slate-200 text-xs sm:text-sm text-slate-800">
+                            <!-- Injected via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- TABLE FOOTER -->
+                <div class="bg-slate-50 border-t border-slate-200 px-4 py-3 flex items-center justify-between text-xs text-slate-500">
+                    <span id="directory-count-text">Showing 5 of 5 Volunteers</span>
+                    <span class="font-medium text-slate-700">Official Unit Enrolment Audit Roster</span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: EVENTS & SERVICE DRIVES HUB         -->
+        <!-- ========================================== -->
+        <section id="view-events" class="tab-view space-y-6 hidden">
+            
+            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold font-heading text-slate-900">NSS Community Events & Service Drives</h2>
+                    <p class="text-xs text-slate-500">Register for upcoming camps to earn official NSS credit hours</p>
+                </div>
+                
+                <!-- EVENT CATEGORY FILTER PILLS -->
+                <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg border border-slate-200 overflow-x-auto">
+                    <button onclick="filterEvents('ALL')" id="evt-filter-ALL" class="evt-filter-btn px-3 py-1.5 rounded-md text-xs font-semibold bg-white text-slate-900 shadow-sm border border-slate-200">All Drives</button>
+                    <button onclick="filterEvents('Upcoming')" id="evt-filter-Upcoming" class="evt-filter-btn px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900">Upcoming</button>
+                    <button onclick="filterEvents('Active Today')" id="evt-filter-Active Today" class="evt-filter-btn px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900">Active Today</button>
+                    <button onclick="filterEvents('Completed')" id="evt-filter-Completed" class="evt-filter-btn px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900">Completed</button>
+                </div>
+            </div>
+
+            <!-- EVENTS CARDS GRID -->
+            <div id="events-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Injected via JavaScript -->
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: DIGITAL NSS VOLUNTEER ID CARD       -->
+        <!-- ========================================== -->
+        <section id="view-idcard" class="tab-view space-y-6 hidden">
+            
+            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold font-heading text-slate-900">Official Digital NSS Volunteer ID Card</h2>
+                        <p class="text-xs text-slate-500">College-grade verified identity card with dynamic verification QR code</p>
+                    </div>
+                    <button onclick="window.print()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg transition border border-slate-800 flex items-center justify-center gap-2 shrink-0 shadow-sm">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Print / Save ID Card
+                    </button>
+                </div>
+
+                <!-- VOLUNTEER SELECTOR DROPDOWN -->
+                <div class="max-w-md">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Select Volunteer Record</label>
+                    <select id="id-select-volunteer" onchange="updateIDCardView(this.value)" class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900 font-medium">
+                        <!-- Populated via JavaScript -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- PRINTABLE ID CARD WRAPPER CONTAINER -->
+            <div class="flex justify-center items-center py-4">
+                
+                <!-- DIGITAL ID CARD COMPONENT (LIGHT SOLID THEME - NO GRADIENTS) -->
+                <div id="printable-id-card-wrapper" class="w-full max-w-sm bg-white border-2 border-slate-900 rounded-2xl shadow-md overflow-hidden relative">
+                    
+                    <!-- ID CARD TOP HEADER BAR (SOLID NAVY WITH GOLD ACCENT) -->
+                    <div class="bg-slate-900 text-white p-4 border-b-2 border-amber-500 relative">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-full bg-slate-800 border border-amber-400 p-0.5 shrink-0">
+                                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                                        <circle cx="50" cy="50" r="46" fill="#1e3a8a" stroke="#f59e0b" stroke-width="5"/>
+                                        <circle cx="50" cy="50" r="36" fill="#0f172a" stroke="#ffffff" stroke-width="2"/>
+                                        <path d="M50 14 L50 86 M14 50 L86 50 M24 24 L76 76 M24 76 L76 24" stroke="#f59e0b" stroke-width="4"/>
+                                        <circle cx="50" cy="50" r="16" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-heading font-extrabold text-xs uppercase tracking-wider text-amber-400">National Service Scheme</h4>
+                                    <p class="text-[10px] text-slate-300 font-medium leading-none mt-0.5">Ministry of Youth Affairs & Sports</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="bg-amber-500 text-slate-950 font-black text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider">UNIT #01</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ID CARD BODY CONTENT -->
+                    <div class="p-5 space-y-4">
+                        
+                        <!-- PHOTO & PRIMARY IDENTITY -->
+                        <div class="flex items-center gap-4 border-b border-slate-200 pb-4">
+                            <!-- AVATAR PHOTO -->
+                            <div class="relative shrink-0">
+                                <div class="w-20 h-20 rounded-xl bg-slate-100 border-2 border-slate-900 flex items-center justify-center overflow-hidden">
+                                    <i data-lucide="user" class="w-10 h-10 text-slate-400"></i>
+                                </div>
+                                <span class="absolute -bottom-1 -right-1 bg-emerald-600 text-white text-[9px] font-bold px-1 py-0.2 rounded border border-white">VERIFIED</span>
+                            </div>
+
+                            <div class="flex-grow min-w-0">
+                                <h3 id="card-name" class="font-heading font-extrabold text-base text-slate-900 truncate">Rahul Sharma</h3>
+                                <div class="mt-0.5">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">NSS Enrolment ID</span>
+                                    <span id="card-id" class="font-mono font-bold text-xs text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded inline-block mt-0.5">NSS-2026-1001</span>
+                                </div>
+                                <p id="card-dept" class="text-xs font-semibold text-slate-700 mt-1 truncate">CSE • 3rd Year</p>
+                            </div>
+                        </div>
+
+                        <!-- DETAILS GRID -->
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="bg-slate-50 border border-slate-200 p-2 rounded-lg">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase block">Emergency Blood</span>
+                                <span id="card-blood" class="font-extrabold text-sm text-red-600">O+ Positive</span>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 p-2 rounded-lg">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase block">Contact Mobile</span>
+                                <span id="card-phone" class="font-semibold text-slate-800 text-[11px] truncate block">+91 98765 43210</span>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 p-2 rounded-lg">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase block">Academic Year</span>
+                                <span class="font-semibold text-slate-800 text-[11px]">2025–2026</span>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 p-2 rounded-lg">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase block">Verified Hours</span>
+                                <span id="card-hours" class="font-extrabold text-slate-900 text-[11px]">42 Hrs Credit</span>
+                            </div>
+                        </div>
+
+                        <!-- QR CODE VERIFICATION & FOOTER STAMP -->
+                        <div class="pt-2 flex items-center justify-between border-t border-slate-200">
+                            <!-- SIMULATED QR CODE SVG -->
+                            <div class="flex items-center gap-2">
+                                <div class="w-12 h-12 bg-white border border-slate-300 p-1 rounded shrink-0 flex items-center justify-center">
+                                    <svg viewBox="0 0 24 24" class="w-full h-full text-slate-900" fill="currentColor">
+                                        <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm9-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm13-2h4v2h-4v-2zm-4 4h2v4h-2v-4zm4 0h4v4h-4v-4zm-4-4h2v2h-2v-2z"/>
+                                    </svg>
+                                </div>
+                                <div class="text-[9px] text-slate-500 leading-tight">
+                                    <span class="font-bold text-slate-800 block">Scan for Verification</span>
+                                    Digital ID Card Validated by NSS Officer
+                                </div>
+                            </div>
+
+                            <!-- NSS MOTTO BADGE -->
+                            <div class="text-right">
+                                <span class="text-[9px] font-bold text-amber-700 italic block">"NOT ME BUT YOU"</span>
+                                <span class="text-[8px] text-slate-400 font-mono">SEVACONNECT</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER COLOR BAR -->
+                    <div class="bg-slate-900 text-white text-[9px] font-semibold text-center py-1 border-t border-amber-500">
+                        OFFICIAL GOVERNMENT VOLUNTEER IDENTITY CARD
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- CERTIFICATES SECTION (VOLUNTEER ONLY) -->
+            <div id="certificates-section" class="max-w-md mx-auto mt-8 bg-white border border-slate-200 rounded-xl p-6 shadow-sm text-center">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 mx-auto flex items-center justify-center mb-3">
+                    <i data-lucide="award" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-lg font-bold font-heading text-slate-900">Official NSS Certificates</h3>
+                <p class="text-sm text-slate-500 mt-1 mb-4">Complete 120 hours of regular NSS activities to be eligible for the core certificate.</p>
+                
+                <div id="cert-locked" class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                    <i data-lucide="lock" class="w-5 h-5 text-slate-400 mx-auto mb-2"></i>
+                    <p class="text-xs font-semibold text-slate-600">Certificate Locked</p>
+                    <p class="text-[10px] text-slate-400 mt-1">You need <span id="cert-hours-needed" class="font-bold text-slate-600">120</span> more hours.</p>
+                </div>
+
+                <div id="cert-unlocked" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 hidden">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600 mx-auto mb-2"></i>
+                    <p class="text-xs font-bold text-emerald-800">Certificate Unlocked!</p>
+                    <p class="text-[10px] text-emerald-600 mt-1 mb-3">Congratulations on completing your required hours.</p>
+                    <button onclick="downloadCertificate()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded transition flex items-center justify-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Download Certificate
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: PROGRAM OFFICER (PO) ADMIN PORTAL   -->
+        <!-- ========================================== -->
+        <section id="view-admin" class="tab-view space-y-8 hidden">
+            
+            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-xl font-bold font-heading text-slate-900">Program Officer Control Console</h2>
+                        <span class="bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold px-2 py-0.5 rounded">PO Mode Active</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5">Approve event service hours, publish announcements, and export NAAC accreditation reports</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="exportCSVReport()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg transition border border-emerald-800 flex items-center gap-2 shadow-sm">
+                        <i data-lucide="download" class="w-4 h-4"></i> Export CSV Roster
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- ADMIN MODULE 1: ATTENDANCE APPROVAL QUEUE -->
+                <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="clock" class="w-5 h-5 text-amber-600"></i>
+                            <h3 class="text-lg font-bold font-heading text-slate-900">Pending Event Attendance Approvals</h3>
+                        </div>
+                        <span id="queue-count-badge" class="bg-amber-100 text-amber-900 font-bold text-xs px-2.5 py-0.5 rounded-full border border-amber-300">0 Pending</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                                    <th class="py-3 px-4">Volunteer Student</th>
+                                    <th class="py-3 px-4">Completed Drive / Camp</th>
+                                    <th class="py-3 px-4 text-center">Hours</th>
+                                    <th class="py-3 px-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-queue-body" class="divide-y divide-slate-200 text-xs sm:text-sm">
+                                <!-- Injected via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN MODULE 2: BROADCAST ANNOUNCEMENT & CREATE EVENT -->
+                <div class="space-y-8">
+                    <!-- BROADCAST -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+                        <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <i data-lucide="megaphone" class="w-5 h-5 text-slate-900"></i>
+                            <h3 class="text-lg font-bold font-heading text-slate-900">Post Urgent Broadcast Announcement</h3>
+                        </div>
+
+                        <form onsubmit="handlePublishAnnouncement(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Announcement Message Text</label>
+                                <input type="text" id="admin-announcement-input" required placeholder="e.g., URGENT: Swachhata Rally report time changed." class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg transition border border-slate-800 flex items-center gap-2 shadow-sm">
+                                    <i data-lucide="send" class="w-4 h-4"></i> Publish Banner
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- CREATE EVENT -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+                        <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <i data-lucide="calendar-plus" class="w-5 h-5 text-amber-600"></i>
+                            <h3 class="text-lg font-bold font-heading text-slate-900">Create New Event / Drive</h3>
+                        </div>
+
+                        <form onsubmit="handleCreateEvent(event)" class="space-y-4 text-xs sm:text-sm">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Event Title *</label>
+                                <input type="text" id="create-event-title" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Date *</label>
+                                    <input type="date" id="create-event-date" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Status</label>
+                                    <select id="create-event-status" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                                        <option value="Upcoming">Upcoming</option>
+                                        <option value="Active Today">Active Today</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Credit Hours *</label>
+                                <input type="number" id="create-event-hours" required min="1" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                            </div>
+                            <div class="flex justify-end pt-2">
+                                <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg transition border border-amber-700 flex items-center gap-2 shadow-sm">
+                                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Event
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 text-xs border-t border-slate-800 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-full bg-slate-800 border border-amber-400 p-0.5 shrink-0">
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <circle cx="50" cy="50" r="46" fill="#1e3a8a" stroke="#f59e0b" stroke-width="5"/>
+                        <circle cx="50" cy="50" r="36" fill="#0f172a" stroke="#ffffff" stroke-width="2"/>
+                        <path d="M50 14 L50 86 M14 50 L86 50 M24 24 L76 76 M24 76 L76 24" stroke="#f59e0b" stroke-width="4"/>
+                        <circle cx="50" cy="50" r="16" fill="#dc2626"/>
+                    </svg>
+                </div>
+                <div>
+                    <span class="font-heading font-bold text-white text-sm">NSS SevaConnect</span>
+                    <p class="text-[11px] text-slate-400">National Service Scheme Digital Portal • Unit #01</p>
+                </div>
+            </div>
+
+            <div class="text-center sm:text-right text-[11px] text-slate-400">
+                <p>Designed for College & University NSS Units • "Not Me But You"</p>
+                <p class="mt-0.5 text-slate-400">NAAC / Accreditation Audit Compliant System</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- REGISTRATION MODAL COMPONENT -->
+    <div id="modal-register" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div class="bg-white border-2 border-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
+            
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-800 border border-amber-300 flex items-center justify-center">
+                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold font-heading text-slate-900">Enrol New NSS Volunteer</h3>
+                        <p class="text-xs text-slate-500">Official registration for academic credit</p>
+                    </div>
+                </div>
+                <button onclick="closeRegistrationModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form onsubmit="handleRegistrationSubmit(event)" class="space-y-4 text-xs sm:text-sm">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Full Volunteer Name *</label>
+                    <input type="text" id="reg-name" required placeholder="e.g., Ananya Roy" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">College Roll / Reg No *</label>
+                        <input type="text" id="reg-roll" required placeholder="e.g., 2024ECE019" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Academic Year *</label>
+                        <select id="reg-year" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year" selected>3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Department / Branch *</label>
+                        <select id="reg-dept" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                            <option value="Computer Science (CSE)">Computer Science (CSE)</option>
+                            <option value="Electronics (ECE)">Electronics (ECE)</option>
+                            <option value="Mechanical (MECH)">Mechanical (MECH)</option>
+                            <option value="Civil Engineering">Civil Engineering</option>
+                            <option value="Biotechnology">Biotechnology</option>
+                            <option value="Arts & Humanities">Arts & Humanities</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Blood Group *</label>
+                        <select id="reg-blood" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                            <option value="O+">O+ Positive</option>
+                            <option value="A+">A+ Positive</option>
+                            <option value="B+">B+ Positive</option>
+                            <option value="AB+">AB+ Positive</option>
+                            <option value="O-">O- Negative</option>
+                            <option value="A-">A- Negative</option>
+                            <option value="B-">B- Negative</option>
+                            <option value="AB-">AB- Negative</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Mobile Contact *</label>
+                        <input type="tel" id="reg-phone" required placeholder="+91 98765 00000" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email Address *</label>
+                        <input type="email" id="reg-email" required placeholder="student@college.edu" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-600 text-slate-900">
+                    </div>
+                </div>
+
+                <!-- AUTO GENERATED ID PREVIEW -->
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">Auto-Assigned NSS ID</span>
+                        <span id="auto-nss-id-preview" class="font-mono font-bold text-sm text-amber-800">NSS-2026-XXXX</span>
+                    </div>
+                    <span class="text-[11px] text-amber-800 font-medium">Auto-generated</span>
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-3 border-t border-slate-100">
+                    <button type="button" onclick="closeRegistrationModal()" class="px-4 py-2 text-slate-600 hover:text-slate-900 font-semibold">Cancel</button>
+                    <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-5 py-2 rounded-lg border border-amber-700 transition flex items-center gap-2 shadow-sm">
+                        <i data-lucide="check" class="w-4 h-4"></i> Complete Registration
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT STATE & APPLICATION LOGIC       -->
+    <!-- ========================================== -->
+    <script src="app.js"></script>
+</body>
+</html>
